@@ -1,0 +1,109 @@
+
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+  <meta charset="UTF-8">
+  <title>Dēļu Kubatūras Kalkulators</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial; background-color: #f5f7fa; padding: 20px; }
+    h1 { color: #2c3e50; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+    th { background-color: #3498db; color: white; }
+    input[type=number] { width: 90%; padding: 5px; }
+    .btn { padding: 10px 20px; background-color: #3498db; color: white; border: none; cursor: pointer; }
+    .btn:hover { background-color: #2980b9; }
+    .remove-btn { background-color: #e74c3c; }
+    .remove-btn:hover { background-color: #c0392b; }
+    .total { font-weight: bold; color: #27ae60; margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+<h1>🪵 Dēļu Kubatūras Kalkulators</h1>
+<p>Aprēķini dēļu kopējo tilpumu kubikmetros. Ievadi izmērus milimetros.</p>
+
+<label for="radio-select">Izvēlies radiostaciju:</label>
+<select id="radio-select">
+  <option value="">-- Izvēlies staciju --</option>
+  <option value="https://topradio.live.advailo.com/topradio/mp3/icecast.audio">TOP Radio</option>
+  <option value="https://radio.latvijasradio.lv/lr1.mp3">Latvijas Radio 1</option>
+  <option value="https://radio.latvijasradio.lv/lr2.mp3">Latvijas Radio 2</option>
+  <option value="https://radio.latvijasradio.lv/lr3.mp3">Latvijas Radio 3 - Klasika</option>
+  <option value="https://radio.latvijasradio.lv/lr4.mp3">Latvijas Radio 4</option>
+  <option value="https://radio.latvijasradio.lv/lr5.mp3">Latvijas Radio 5 - Pieci.lv</option>
+</select>
+<button onclick="playSelectedRadio()">▶️ Atskaņot</button>
+
+<audio id="radio-player" controls>
+  <source id="radio-source" src="" type="audio/mpeg">
+  Tava pārlūkprogramma neatbalsta audio.
+</audio>
+
+<table id="board-table">
+  <thead>
+    <tr>
+      <th>Garums (mm)</th>
+      <th>Platums (mm)</th>
+      <th>Biezums (mm)</th>
+      <th>Skaits</th>
+      <th>Kubatūra (m³)</th>
+      <th>Darbība</th>
+    </tr>
+  </thead>
+  <tbody id="table-body"></tbody>
+</table>
+
+<button class="btn" onclick="addRow()">+ Pievienot Dēli</button>
+<p class="total" id="total-volume">Kopējā kubatūra: 0.000000 m³ (0.000 litri)</p>
+
+<script>
+  function playSelectedRadio() {
+    const select = document.getElementById('radio-select');
+    const player = document.getElementById('radio-player');
+    const source = document.getElementById('radio-source');
+    const url = select.value;
+    if (url) {
+      source.src = url;
+      player.load();
+      player.play();
+    }
+  }
+
+  function addRow() {
+    const tbody = document.getElementById("table-body");
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td><input type="number" placeholder="2400" onchange="updateVolume()"></td>
+      <td><input type="number" placeholder="100" onchange="updateVolume()"></td>
+      <td><input type="number" placeholder="25" onchange="updateVolume()"></td>
+      <td><input type="number" placeholder="10" onchange="updateVolume()"></td>
+      <td class="volume">0.000000</td>
+      <td><button class="btn remove-btn" onclick="removeRow(this)">✖</button></td>
+    `;
+    tbody.appendChild(row);
+  }
+
+  function removeRow(btn) {
+    btn.closest("tr").remove();
+    updateVolume();
+  }
+
+  function updateVolume() {
+    let total = 0;
+    document.querySelectorAll("#table-body tr").forEach(row => {
+      const inputs = row.querySelectorAll("input");
+      const [l, w, t, q] = [...inputs].map(i => parseFloat(i.value) || 0);
+      const vol = (l * w * t * q) / 1000000000;
+      row.querySelector(".volume").innerText = vol.toFixed(6);
+      total += vol;
+    });
+    document.getElementById("total-volume").innerText = 
+      `Kopējā kubatūra: ${total.toFixed(6)} m³ (${(total * 1000).toFixed(3)} litri)`;
+  }
+
+  window.onload = addRow;
+</script>
+</body>
+</html>
