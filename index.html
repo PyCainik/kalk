@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="lv">
 <head>
   <meta charset="UTF-8">
-  <title>Dēļu Kubatūras Kalkulators</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dēļu Kubatūras Kalkulators + Radio</title>
   <style>
     body { font-family: Arial; background-color: #f5f7fa; padding: 20px; }
     h1 { color: #2c3e50; }
@@ -21,21 +20,17 @@
 </head>
 <body>
 
-<h1>🪵 Dēļu Kubatūras Kalkulators</h1>
-<p>Aprēķini dēļu kopējo tilpumu kubikmetros. Ievadi izmērus milimetros.</p>
+<h1>🪥 Dēļu Kubatūras Kalkulators</h1>
+<p>Ievadi izmērus milimetros, un aprēķins notiks automātiski.</p>
 
-<label for="radio-select">Izvēlies radiostaciju:</label>
-<select id="radio-select">
-  <option value="">-- Izvēlies staciju --</option>
-  <option value="https://topradio.live.advailo.com/topradio/mp3/icecast.audio">TOP Radio</option>
-</select>
-<button onclick="playSelectedRadio()">▶️ Atskaņot</button>
-
-<audio id="radio-player" controls>
+<!-- RADIO IESLĒGŠANA -->
+<button class="btn" onclick="playTopRadio()">▶️ Ieslēgt TOP Radio</button>
+<audio id="radio-player" style="display:block; margin-top:10px;" controls>
   <source id="radio-source" src="" type="audio/mpeg">
   Tava pārlūkprogramma neatbalsta audio.
 </audio>
 
+<!-- TABULA -->
 <table id="board-table">
   <thead>
     <tr>
@@ -50,20 +45,22 @@
   <tbody id="table-body"></tbody>
 </table>
 
-<button class="btn" onclick="addRow()">+ Pievienot jaunu rindu</button>
+<button class="btn" onclick="addRow()">+ Pievienot rindu</button>
 <p class="total" id="total-volume">Kopējā kubatūra: 0.000000 m³ (0.000 litri)</p>
 
+<footer style="text-align:center; margin-top: 50px; font-size: 0.9em; color: #999;">
+  Dēļu kubatūras kalkulators © 2025 — izveidoja PyCainik
+</footer>
+
+<!-- SCRIPTS -->
 <script>
-  function playSelectedRadio() {
-    const select = document.getElementById('radio-select');
-    const player = document.getElementById('radio-player');
-    const source = document.getElementById('radio-source');
-    const url = select.value;
-    if (url) {
-      source.src = url;
-      player.load();
-      player.play();
-    }
+  function playTopRadio() {
+    const player = document.getElementById("radio-player");
+    const source = document.getElementById("radio-source");
+    const url = "https://topradio.live.advailo.com/topradio/mp3/icecast.audio";
+    source.src = url;
+    player.load();
+    player.play();
   }
 
   function addRow() {
@@ -94,11 +91,12 @@
       row.querySelector(".volume").innerText = vol.toFixed(6);
       total += vol;
     });
-    document.getElementById("total-volume").innerText = 
+    document.getElementById("total-volume").innerText =
       `Kopējā kubatūra: ${total.toFixed(6)} m³ (${(total * 1000).toFixed(3)} litri)`;
   }
 
   window.onload = addRow;
 </script>
+
 </body>
 </html>
