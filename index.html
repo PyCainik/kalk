@@ -1,163 +1,143 @@
 <!DOCTYPE html>
 <html lang="lv">
 <head>
-  <meta name="description" content="Dēļu kubatūras kalkulators tiešsaistē — aprēķini m³ pēc izmēriem mm un skaita">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dēļu Kubatūras Kalkulators + Radio</title>
+  <title>Kubatūras Kalkulators</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <style>
-    body {
-      font-family: Arial;
-      background: linear-gradient(to right, #e0f7fa, #fbe9e7);
-      padding: 20px;
-      margin: 0;
-    }
-    h1 {
-      color: #2c3e50;
-      text-align: center;
-    }
-    table, .btn, audio, footer {
-      background: rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      border-radius: 10px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    th, td {
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      padding: 10px;
-      text-align: center;
-      color: #000;
-    }
-    th {
-      background-color: rgba(52, 152, 219, 0.6);
-      color: white;
-    }
-    input[type=number] {
-      width: 90%;
-      padding: 5px;
-    }
-    .btn {
-      padding: 10px 20px;
-      color: white;
-      background-color: rgba(52, 152, 219, 0.6);
-      cursor: pointer;
-      margin-top: 10px;
-      display: inline-block;
-    }
-    .btn:hover {
-      background-color: rgba(41, 128, 185, 0.6);
-    }
-    .remove-btn {
-      background-color: rgba(231, 76, 60, 0.6);
-    }
-    .remove-btn:hover {
-      background-color: rgba(192, 57, 43, 0.6);
-    }
-    .total {
-      font-weight: bold;
-      color: #27ae60;
-      margin-top: 20px;
-      text-align: center;
-    }
-    footer {
-      text-align:center;
-      margin-top: 50px;
-      font-size: 0.9em;
-      color: #000;
-      padding: 10px;
-    }
+    body { background-color: #f8f9fa; padding: 20px; }
+    .btn-remove { background-color: #dc3545; color: white; border: none; padding: 0 8px; border-radius: 3px; }
+    table th, table td { vertical-align: middle; text-align: center; }
   </style>
 </head>
 <body>
+  <h1 class="text-center" id="title">Kubatūras Kalkulators</h1>
 
-<h1>🧮 Dēļu Kubatūras Kalkulators</h1>
-<p style="text-align:center;">Ievadi izmērus milimetros, un aprēķins notiks automātiski.</p>
+  <!-- RADIO IESLĒGŠANA -->
+  <div class="text-center mb-4">
+    <button class="btn btn-primary" onclick="playTopRadio()">▶️ Ieslēgt TOP Radio</button>
+    <audio id="radio-player" style="display:block; margin: 10px auto; width: 100%; max-width: 600px;" controls>
+      <source id="radio-source" src="" type="audio/mpeg">
+      Tava pārlūkprogramma neatbalsta audio.
+    </audio>
+  </div>
 
-<!-- RADIO IESLĒGŠANA -->
-<div style="text-align:center;">
-  <button class="btn" onclick="playTopRadio()">▶️ Ieslēgt TOP Radio</button>
-</div>
-<audio id="radio-player" style="display:block; margin: 10px auto; width: 100%; max-width: 600px;" controls>
-  <source id="radio-source" src="" type="audio/mpeg">
-  Tava pārlūkprogramma neatbalsta audio.
-</audio>
+  <h3 id="boardsTitle">Dēļu kubatūras aprēķins</h3>
+  <div class="row g-2">
+    <div class="col"><input class="form-control" type="number" id="inputLength" placeholder="Garums (mm)"></div>
+    <div class="col"><input class="form-control" type="number" id="inputWidth" placeholder="Platums (mm)"></div>
+    <div class="col"><input class="form-control" type="number" id="inputThickness" placeholder="Biezums (mm)"></div>
+    <div class="col"><input class="form-control" type="number" id="inputCount" placeholder="Skaits"></div>
+    <div class="col"><button class="btn btn-primary w-100" onclick="addBoardRow()" id="addBoard">Pievienot dēli</button></div>
+  </div>
 
-<!-- TABULA -->
-<table id="board-table">
-  <thead>
-    <tr>
-      <th>Garums (mm)</th>
-      <th>Platums (mm)</th>
-      <th>Biezums (mm)</th>
-      <th>Skaits</th>
-      <th>Kubatūra (m³)</th>
-      <th>Darbība</th>
-    </tr>
-  </thead>
-  <tbody id="table-body"></tbody>
-</table>
+  <table class="table table-bordered table-striped mt-3" id="boardTable">
+    <thead><tr><th>Garums</th><th>Platums</th><th>Biezums</th><th>Skaits</th><th>Kubatūra (m³)</th><th></th></tr></thead>
+    <tbody></tbody>
+  </table>
+  <p><strong id="totalBoardLabel">Kopējā kubatūra:</strong> <span id="totalBoard">0</span> m³</p>
+  <button class="btn btn-success mb-4" onclick="calcBoards()" id="calcBtn">Aprēķināt dēļu kubatūru</button>
 
-<div style="text-align:center;">
-  <button class="btn" onclick="addRow()">+ Pievienot rindu</button>
-</div>
-<p class="total" id="total-volume">Kopējā kubatūra: 0.000000 m³ (0.000 litri)</p>
+  <h3 id="logsTitle">Baļķu kubatūras aprēķins</h3>
+  <div class="row g-2">
+    <div class="col"><input class="form-control" type="number" id="inputDiameter" placeholder="Diametrs (mm)"></div>
+    <div class="col"><input class="form-control" type="number" id="inputLengthLog" placeholder="Garums (mm)"></div>
+    <div class="col"><input class="form-control" type="number" id="inputCountLog" placeholder="Skaits"></div>
+    <div class="col"><button class="btn btn-primary w-100" onclick="addLogRow()" id="addLog">Pievienot baļķi</button></div>
+  </div>
 
-<footer>
-  Dēļu kubatūras kalkulators © 2025 — izveidoja PyCainik<br>
-  Saziņai: <a href="mailto:pycainik.tools@gmail.com">pycainik.tools@gmail.com</a>
-</footer>
+  <table class="table table-bordered table-striped mt-3" id="logTable">
+    <thead><tr><th>Diametrs</th><th>Garums</th><th>Skaits</th><th>Kubatūra (m³)</th><th></th></tr></thead>
+    <tbody></tbody>
+  </table>
+  <p><strong id="totalLogLabel">Kopējā kubatūra:</strong> <span id="totalLog">0</span> m³</p>
+  <button class="btn btn-success mb-4" onclick="calcLogs()" id="calcBtnLog">Aprēķināt baļķu kubatūru</button>
 
-<!-- SCRIPTS -->
-<script>
-  function playTopRadio() {
-    const player = document.getElementById("radio-player");
-    const source = document.getElementById("radio-source");
-    const url = "https://topradio.live.advailo.com/topradio/mp3/icecast.audio";
-    source.src = url;
-    player.load();
-    player.play();
-  }
+  <h3 id="effTitle">Lietderības koeficients</h3>
+  <p><span id="effResult">0%</span></p>
 
-  function addRow() {
-    const tbody = document.getElementById("table-body");
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td><input type="number" placeholder="2400" onchange="updateVolume()"></td>
-      <td><input type="number" placeholder="100" onchange="updateVolume()"></td>
-      <td><input type="number" placeholder="25" onchange="updateVolume()"></td>
-      <td><input type="number" placeholder="10" onchange="updateVolume()"></td>
-      <td class="volume">0.000000</td>
-      <td><button class="btn remove-btn" onclick="removeRow(this)">✖</button></td>
-    `;
-    tbody.appendChild(row);
-  }
+  <button class="btn btn-secondary mb-4" onclick="clearAll()">Notīrīt visu</button>
+  <button class="btn btn-outline-secondary mb-4 ms-2" onclick="clearInputsOnly()">Notīrīt tikai ievades laukus</button>
 
-  function removeRow(btn) {
-    btn.closest("tr").remove();
-    updateVolume();
-  }
+  <script>
+    function playTopRadio() {
+      const player = document.getElementById("radio-player");
+      const source = document.getElementById("radio-source");
+      const url = "https://topradio.live.advailo.com/topradio/mp3/icecast.audio";
+      source.src = url;
+      player.load();
+      player.play();
+    }
 
-  function updateVolume() {
-    let total = 0;
-    document.querySelectorAll("#table-body tr").forEach(row => {
-      const inputs = row.querySelectorAll("input");
-      const [l, w, t, q] = [...inputs].map(i => parseFloat(i.value) || 0);
-      const vol = (l * w * t * q) / 1000000000;
-      row.querySelector(".volume").innerText = vol.toFixed(6);
-      total += vol;
-    });
-    document.getElementById("total-volume").innerText =
-      `Kopējā kubatūra: ${total.toFixed(6)} m³ (${(total * 1000).toFixed(3)} litri)`;
-  }
+    function addBoardRow() {
+      const l = +document.getElementById("inputLength").value;
+      const w = +document.getElementById("inputWidth").value;
+      const t = +document.getElementById("inputThickness").value;
+      const c = +document.getElementById("inputCount").value;
+      if (!l || !w || !t || !c) return;
+      const v = (l * w * t * c) / 1e9;
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${l}</td><td>${w}</td><td>${t}</td><td>${c}</td><td>${v.toFixed(6)}</td><td><button class='btn-remove' onclick='this.closest("tr").remove()'>✖</button></td>`;
+      document.querySelector("#boardTable tbody").appendChild(tr);
+    }
 
-  window.onload = addRow;
-</script>
+    function addLogRow() {
+      const d = +document.getElementById("inputDiameter").value;
+      const l = +document.getElementById("inputLengthLog").value;
+      const c = +document.getElementById("inputCountLog").value;
+      if (!d || !l || !c) return;
+      const r = d / 2000;
+      const v = Math.PI * r * r * (l / 1000) * c;
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${d}</td><td>${l}</td><td>${c}</td><td>${v.toFixed(6)}</td><td><button class='btn-remove' onclick='this.closest("tr").remove()'>✖</button></td>`;
+      document.querySelector("#logTable tbody").appendChild(tr);
+    }
 
+    function calcBoards() {
+      let sum = 0;
+      document.querySelectorAll("#boardTable tbody tr").forEach(row => {
+        const val = parseFloat(row.cells[4].innerText.replace(',', '.'));
+        if (!isNaN(val)) sum += val;
+      });
+      document.getElementById("totalBoard").textContent = sum.toFixed(6);
+      calcEfficiency();
+    }
+
+    function calcLogs() {
+      let sum = 0;
+      document.querySelectorAll("#logTable tbody tr").forEach(row => {
+        const val = parseFloat(row.cells[3].innerText.replace(',', '.'));
+        if (!isNaN(val)) sum += val;
+      });
+      document.getElementById("totalLog").textContent = sum.toFixed(6);
+      calcEfficiency();
+    }
+
+    function calcEfficiency() {
+      const b = parseFloat(document.getElementById("totalBoard").textContent);
+      const l = parseFloat(document.getElementById("totalLog").textContent);
+      const eff = !isNaN(b) && !isNaN(l) && l > 0 ? (b / l * 100).toFixed(2) : 0;
+      document.getElementById("effResult").textContent = eff + "%";
+    }
+
+    function clearAll() {
+      document.querySelectorAll("input[type=number]").forEach(input => input.value = "");
+      const boardTableBody = document.querySelector("#boardTable tbody");
+      const logTableBody = document.querySelector("#logTable tbody");
+      if (boardTableBody) boardTableBody.innerHTML = "";
+      if (logTableBody) logTableBody.innerHTML = "";
+      const totalBoard = document.getElementById("totalBoard");
+      const totalLog = document.getElementById("totalLog");
+      const effResult = document.getElementById("effResult");
+      if (totalBoard) totalBoard.textContent = "0";
+      if (totalLog) totalLog.textContent = "0";
+      if (effResult) effResult.textContent = "0%";
+    }
+
+    function clearInputsOnly() {
+      document.querySelectorAll("input[type=number]").forEach(input => input.value = "");
+    }
+  </script>
 </body>
 </html>
